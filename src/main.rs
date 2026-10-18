@@ -4,7 +4,7 @@ use crate::{
     damage::{DamageMessage, apply_damage, handle_deaths},
     enemy::show_health,
     levels::one::spawn_level,
-    player::handle_player_attack,
+    player::{handle_player_attack, move_player},
     state::{GameState, handle_start_button, setup_main_menu, tear_down_main_menu},
 };
 
@@ -27,6 +27,7 @@ impl Plugin for DefensegamePlugin {
         // Disabled for now and spawned on init
         // app.add_systems(Update, spawn_enemies.run_if(resource_exists::<LevelState>));
         app.add_systems(Update, handle_start_button);
+        app.add_systems(Update, move_player.run_if(in_state(GameState::Playing)));
         app.add_systems(
             Update,
             (

@@ -1,11 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    base::Position,
     damage::Health,
     enemy::Enemy,
-    player::{AttackCooldown, AttackRange, Player},
-    state::LevelState,
+    player::{AttackCooldown, AttackRange, MovementSpeed, Player},
 };
 
 pub fn spawn_level(
@@ -36,11 +34,6 @@ pub fn spawn_level(
                 Mesh3d(cube.clone()),
                 MeshMaterial3d(enemy_material.clone()),
                 Transform::from_xyz(x, 0.4, -3.0),
-                Position {
-                    x: x,
-                    y: 0.4,
-                    z: -3.0,
-                },
             ))
             .with_child((
                 Text2d::new("100"),
@@ -60,13 +53,9 @@ pub fn spawn_level(
         Mesh3d(cube),
         MeshMaterial3d(player_material),
         Transform::from_xyz(0.0, 0.4, 4.0),
-        Position {
-            x: 0.0,
-            y: 0.4,
-            z: 4.0,
-        },
         AttackRange { range: 100.0 },
         AttackCooldown(timer),
+        MovementSpeed(2.0),
     ));
 
     // Lighting

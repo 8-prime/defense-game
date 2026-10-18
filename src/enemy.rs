@@ -8,7 +8,7 @@ use bevy::{
     sprite::Text2d,
 };
 
-use crate::{base::Position, damage::Health};
+use crate::damage::Health;
 
 #[derive(Component)]
 pub struct Enemy;

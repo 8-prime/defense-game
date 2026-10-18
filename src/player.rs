@@ -6,11 +6,13 @@ use bevy::{
         query::With,
         system::{Query, Res, Single},
     },
-    input::{ButtonInput, mouse::MouseButton},
+    input::{ButtonInput, keyboard::KeyCode, mouse::MouseButton},
+    math::Vec3,
     time::{Time, Timer},
+    transform::components::Transform,
 };
 
-use crate::{base::Position, damage::DamageMessage, enemy::Enemy};
+use crate::{damage::DamageMessage, enemy::Enemy};
 
 #[derive(Component)]
 pub struct AttackRange {
@@ -18,19 +20,20 @@ pub struct AttackRange {
 }
 
 impl AttackRange {
-    pub fn in_range(&self, source: &Position, target: &Position) -> bool {
-        let dx = source.x - target.x;
-        let dz = source.z - target.z;
-        let distance_squared = dx * dx + dz * dz;
+    pub fn in_range(&self, source: &Transform, target: &Transform) -> bool {
+        let dist = (source.translation - target.translation).length();
+        // let dx = source.x - target.x;
+        // let dz = source.z - target.z;
+        // let distance_squared = dx * dx + dz * dz;
 
-        // println!(
-        //     "Source: {:?}, Target: {:?}, Distance²: {}, Range²: {}",
-        //     source,
-        //     target,
-        //     distance_squared,
-        //     self.range * self.range
-        // );
-        distance_squared <= self.range * self.range
+        // // println!(
+        // //     "Source: {:?}, Target: {:?}, Distance²: {}, Range²: {}",
+        // //     source,
+        // //     target,
+        // //     distance_squared,
+        // //     self.range * self.range
+        // // );
+        return dist <= self.range;
     }
 }
 
@@ -38,13 +41,16 @@ impl AttackRange {
 pub struct Player;
 
 #[derive(Component)]
+pub struct MovementSpeed(pub f32);
+
+#[derive(Component)]
 pub struct AttackCooldown(pub Timer);
 
 pub fn handle_player_attack(
     time: Res<Time>,
     mouse: Res<ButtonInput<MouseButton>>,
-    enemies: Query<(Entity, &Position), With<Enemy>>,
-    mut player: Single<(&Position, &AttackRange, &mut AttackCooldown), With<Player>>,
+    enemies: Query<(Entity, &Transform), With<Enemy>>,
+    mut player: Single<(&Transform, &AttackRange, &mut AttackCooldown), With<Player>>,
     mut message_writer: MessageWriter<DamageMessage>,
 ) {
     let (position, range, cooldown) = &mut *player;
@@ -69,4 +75,27 @@ pub fn handle_player_attack(
             target: entity,
         });
     }
+}
+
+pub fn move_player(
+    time: Res<Time>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut player: Single<(&mut Transform, &MovementSpeed), With<Player>>,
+) {
+    let (transform, speed) = &mut *player;
+    let mut direction = Vec3::ZERO;
+
+    if keyboard.pressed(KeyCode::KeyW) {
+        direction.z -= 1.0;
+    }
+    if keyboard.pressed(KeyCode::KeyA) {
+        direction.x -= 1.0;
+    }
+    if keyboard.pressed(KeyCode::KeyS) {
+        direction.z += 1.0;
+    }
+    if keyboard.pressed(KeyCode::KeyD) {
+        direction.x += 1.0;
+    }
+    transform.translation += direction.normalize_or_zero() * speed.0 * time.delta_secs();
 }
