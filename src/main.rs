@@ -1,62 +1,48 @@
-use bevy::{prelude::*, render::render_resource::BufferBindingType};
+use bevy::prelude::*;
 
-#[derive(Component)]
-struct Position {
-    x: f32,
-    y: f32,
-}
+use crate::{
+    damage::{DamageMessage, apply_damage, handle_deaths},
+    enemy::show_health,
+    levels::one::spawn_level,
+    player::handle_player_attack,
+    state::{GameState, handle_start_button, setup_main_menu, tear_down_main_menu},
+};
 
-fn print_position_system(query: Query<&Position>) {
-    for position in &query {
-        println!("position: {} {}", position.x, position.y);
-    }
-}
+mod base;
+mod damage;
+mod enemy;
+mod levels;
+mod player;
+mod state;
 
-struct Entity(u64);
+pub struct DefensegamePlugin;
 
-fn hello_world() {
-    println!("hello world!");
-}
-
-#[derive(Component)]
-struct BigPenis;
-
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
-
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("Elaina Proctor".to_string())));
-    commands.spawn((Person, Name("Renzo Hume".to_string())));
-    commands.spawn((BigPenis, Person, Name("Zayna Nieves".to_string())));
-}
-
-fn schlongers(query: Query<&Name, With<BigPenis>>) {
-    for name in &query {
-        println!("{} is hung as fuck!", name.0);
-    }
-}
-
-fn greet_people(query: Query<&Name, With<Person>>) {
-    for name in &query {
-        println!("hello {}!", name.0);
-    }
-}
-
-fn update_people(mut query: Query<&mut Name, With<Person>>) {
-    for mut name in &mut query {
-        if name.0 == "Elaina Proctor" {
-            name.0 = "Elaina Hume".to_string();
-            break; // We don't need to change any other names.
-        }
+impl Plugin for DefensegamePlugin {
+    fn build(&self, app: &mut App) {
+        app.init_state::<GameState>()
+            .add_systems(OnEnter(GameState::MainMenu), setup_main_menu);
+        app.add_systems(OnExit(GameState::MainMenu), tear_down_main_menu);
+        app.add_systems(OnEnter(GameState::Playing), spawn_level);
+        app.add_message::<DamageMessage>();
+        // Disabled for now and spawned on init
+        // app.add_systems(Update, spawn_enemies.run_if(resource_exists::<LevelState>));
+        app.add_systems(Update, handle_start_button);
+        app.add_systems(
+            Update,
+            (
+                handle_player_attack,
+                apply_damage,
+                handle_deaths,
+                show_health,
+            )
+                .chain(),
+        );
     }
 }
 
 fn main() {
     App::new()
-        .add_systems(Startup, add_people)
-        .add_systems(Update, (hello_world, (update_people, greet_people).chain()))
+        .add_plugins(DefaultPlugins)
+        .add_plugins(DefensegamePlugin)
         .run();
 }
