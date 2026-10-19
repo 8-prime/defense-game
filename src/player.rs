@@ -1,18 +1,29 @@
 use bevy::{
+    app::{App, Update},
     ecs::{
         component::Component,
         entity::Entity,
         message::MessageWriter,
         query::With,
+        schedule::IntoScheduleConfigs,
         system::{Query, Res, Single},
     },
     input::{ButtonInput, keyboard::KeyCode, mouse::MouseButton},
     math::Vec3,
+    state::condition::in_state,
     time::{Time, Timer},
     transform::components::Transform,
 };
 
-use crate::{damage::DamageMessage, enemy::Enemy};
+use crate::{damage::DamageMessage, enemy::Enemy, state::GameState};
+
+pub fn plugin(app: &mut App) {
+    app.add_systems(Update, move_player.run_if(in_state(GameState::Playing)));
+    app.add_systems(
+        Update,
+        handle_player_attack.run_if(in_state(GameState::Playing)),
+    );
+}
 
 #[derive(Component)]
 pub struct AttackRange {

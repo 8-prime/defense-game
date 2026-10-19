@@ -4,7 +4,12 @@ use crate::{
     damage::Health,
     enemy::Enemy,
     player::{AttackCooldown, AttackRange, MovementSpeed, Player},
+    state::GameState,
 };
+
+pub fn plugin(app: &mut App) {
+    app.add_systems(OnEnter(GameState::Playing), spawn_level);
+}
 
 pub fn spawn_level(
     mut commands: Commands,
@@ -53,7 +58,7 @@ pub fn spawn_level(
         Mesh3d(cube),
         MeshMaterial3d(player_material),
         Transform::from_xyz(0.0, 0.4, 4.0),
-        AttackRange { range: 100.0 },
+        AttackRange { range: 10.0 },
         AttackCooldown(timer),
         MovementSpeed(2.0),
     ));

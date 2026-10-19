@@ -1,9 +1,28 @@
-use bevy::ecs::{
-    component::Component,
-    entity::Entity,
-    message::{Message, MessageReader},
-    system::{Commands, Query},
+use bevy::{
+    app::{App, Update},
+    ecs::{
+        component::Component,
+        entity::Entity,
+        message::{Message, MessageReader},
+        schedule::IntoScheduleConfigs,
+        system::{Commands, Query},
+    },
+    state::condition::in_state,
 };
+
+use crate::{player::handle_player_attack, state::GameState};
+
+pub fn plugin(app: &mut App) {
+    app.add_message::<DamageMessage>();
+    // apply_damage
+    app.add_systems(
+        Update,
+        (apply_damage, handle_deaths)
+            .chain()
+            .run_if(in_state(GameState::Playing))
+            .after(handle_player_attack),
+    );
+}
 
 #[derive(Component)]
 pub struct Health(pub f32);
