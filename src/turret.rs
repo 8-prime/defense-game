@@ -46,21 +46,14 @@ pub fn handle_turret_attack(
 
 pub fn spawn_turret(
     commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
+    asset_server: &AssetServer,
     position: Vec3,
     size: f32,
 ) {
     commands.spawn((
         Turret,
         AttackCooldown(Timer::from_seconds(1.0, TimerMode::Repeating)),
-        Mesh3d(meshes.add(Cylinder::new(size, size * 2.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(0.1, 0.3, 1.0),
-            metallic: 0.6,
-            perceptual_roughness: 0.3,
-            ..default()
-        })),
-        Transform::from_translation(position),
+        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("turret.glb"))),
+        Transform::from_translation(position).with_scale(Vec3::splat(size)),
     ));
 }

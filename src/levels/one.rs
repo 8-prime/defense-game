@@ -17,6 +17,7 @@ pub fn spawn_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     // Floor
     commands.spawn((
@@ -67,8 +68,7 @@ pub fn spawn_level(
 
     spawn_turret(
         &mut commands,
-        &mut meshes,
-        &mut materials,
+        &asset_server,
         Vec3 {
             x: 3.0,
             y: 0.4,
