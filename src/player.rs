@@ -11,11 +11,16 @@ use bevy::{
     input::{ButtonInput, keyboard::KeyCode, mouse::MouseButton},
     math::Vec3,
     state::condition::in_state,
-    time::{Time, Timer},
+    time::Time,
     transform::components::Transform,
 };
 
-use crate::{damage::DamageMessage, enemy::Enemy, state::GameState};
+use crate::{
+    base::{AttackCooldown, AttackRange},
+    damage::DamageMessage,
+    enemy::Enemy,
+    state::GameState,
+};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, move_player.run_if(in_state(GameState::Playing)));
@@ -26,36 +31,10 @@ pub fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
-pub struct AttackRange {
-    pub range: f32,
-}
-
-impl AttackRange {
-    pub fn in_range(&self, source: &Transform, target: &Transform) -> bool {
-        let dist = (source.translation - target.translation).length();
-        // let dx = source.x - target.x;
-        // let dz = source.z - target.z;
-        // let distance_squared = dx * dx + dz * dz;
-
-        // // println!(
-        // //     "Source: {:?}, Target: {:?}, Distance²: {}, Range²: {}",
-        // //     source,
-        // //     target,
-        // //     distance_squared,
-        // //     self.range * self.range
-        // // );
-        return dist <= self.range;
-    }
-}
-
-#[derive(Component)]
 pub struct Player;
 
 #[derive(Component)]
 pub struct MovementSpeed(pub f32);
-
-#[derive(Component)]
-pub struct AttackCooldown(pub Timer);
 
 pub fn handle_player_attack(
     time: Res<Time>,

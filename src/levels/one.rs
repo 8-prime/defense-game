@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
+    base::{AttackCooldown, AttackRange},
     damage::Health,
     enemy::Enemy,
-    player::{AttackCooldown, AttackRange, MovementSpeed, Player},
+    player::{MovementSpeed, Player},
     state::GameState,
+    turret::spawn_turret,
 };
 
 pub fn plugin(app: &mut App) {
@@ -62,6 +64,18 @@ pub fn spawn_level(
         AttackCooldown(timer),
         MovementSpeed(2.0),
     ));
+
+    spawn_turret(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3 {
+            x: 3.0,
+            y: 0.4,
+            z: 4.0,
+        },
+        0.8,
+    );
 
     // Lighting
     commands.spawn((PointLight::default(), Transform::from_xyz(0.0, 10.0, 0.0)));
