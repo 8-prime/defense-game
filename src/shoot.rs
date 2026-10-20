@@ -1,6 +1,6 @@
 use bevy::{
     app::{App, Update},
-    asset::Assets,
+    asset::{AssetServer, Assets},
     color::Color,
     ecs::{
         component::Component,
@@ -10,6 +10,7 @@ use bevy::{
         schedule::IntoScheduleConfigs,
         system::{Commands, Query, Res},
     },
+    gltf::GltfAssetLabel,
     math::Vec3,
     mesh::{Mesh, Mesh3d},
     pbr::{MeshMaterial3d, StandardMaterial},
@@ -18,6 +19,7 @@ use bevy::{
     time::Time,
     transform::components::Transform,
     utils::default,
+    world_serialization::WorldAssetRoot,
 };
 
 use crate::{damage::DamageMessage, enemy::Enemy, state::GameState};
@@ -74,34 +76,10 @@ fn bullet_damage(
         }
     }
 }
-pub fn spawn_bullet_from_source(
-    commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
-    source: Transform,
-    target: Transform,
-    speed: f32,
-    damage: f32,
-    size: f32,
-) {
-    let dir = (target.translation - source.translation).normalize_or_zero();
-
-    spawn_bullet(
-        commands,
-        meshes,
-        materials,
-        dir,
-        source.translation,
-        speed,
-        damage,
-        size,
-    );
-}
 
 pub fn spawn_bullet(
     commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<StandardMaterial>,
+    asset_server: &AssetServer,
     dir: Vec3,
     position: Vec3,
     speed: f32,
@@ -110,13 +88,7 @@ pub fn spawn_bullet(
 ) {
     commands.spawn((
         Bullet { dir, speed, damage },
-        Mesh3d(meshes.add(Sphere::new(size))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(1.0, 0.75, 0.0),
-            metallic: 0.8,
-            perceptual_roughness: 0.25,
-            ..default()
-        })),
-        Transform::from_translation(position),
+        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("bullet.glb"))),
+        Transform::from_translation(position).with_scale(Vec3::splat(2.0)),
     ));
 }
