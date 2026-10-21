@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod base;
+mod camera;
 mod damage;
 mod enemy;
 mod levels;
@@ -18,5 +19,6 @@ pub fn plugin(app: &mut App) {
         shoot::plugin,
         state::plugin,
         turret::plugin,
+        camera::plugin,
     ));
 }

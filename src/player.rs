@@ -72,7 +72,21 @@ pub fn move_player(
     if keyboard.pressed(KeyCode::KeyD) {
         direction.x += 1.0;
     }
-    transform.translation += direction.normalize_or_zero() * speed.0 * time.delta_secs();
+
+    let dir = direction.normalize_or_zero();
+
+    if dir == Vec3::ZERO {
+        return;
+    }
+
+    transform.translation += dir * speed.0 * time.delta_secs();
+
+    let target_rotation = Transform::IDENTITY.looking_to(dir, Vec3::Y).rotation;
+    let max_angle = 360.0_f32.to_radians() * time.delta_secs();
+
+    transform.rotation = transform
+        .rotation
+        .rotate_towards(target_rotation, max_angle);
 }
 
 pub fn spawn_player(commands: &mut Commands, asset_server: &AssetServer) {

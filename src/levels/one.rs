@@ -10,6 +10,9 @@ pub struct GeneratorParts {
     pub stabalizer: Entity,
 }
 
+#[derive(Component)]
+pub struct EnemyPath;
+
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Playing), spawn_level);
     app.add_systems(Update, resolve_generator_parts);
@@ -79,10 +82,6 @@ pub fn spawn_level(
         Generator {},
     ));
 
-    commands.spawn((WorldAssetRoot(
-        asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy_path.glb")),
-    ),));
-
     // 10 enemies in a row
     for i in 0..10 {
         let x = (i as f32 - 4.5) * 1.5;
@@ -104,7 +103,7 @@ pub fn spawn_level(
             y: 0.4,
             z: 4.0,
         },
-        1.0,
+        0.8,
     );
 
     // Lighting

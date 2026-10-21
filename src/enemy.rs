@@ -6,6 +6,7 @@ use bevy::{
         component::Component,
         hierarchy::Children,
         query::{Changed, With},
+        resource::Resource,
         schedule::IntoScheduleConfigs,
         system::{Commands, Query},
     },
@@ -14,6 +15,7 @@ use bevy::{
     sprite::Text2d,
     state::condition::in_state,
     text::{TextColor, TextFont},
+    time::{Timer, TimerMode},
     transform::components::Transform,
     world_serialization::WorldAssetRoot,
 };
@@ -23,6 +25,15 @@ use crate::{
     damage::{DamageMessage, Health, handle_deaths},
     state::GameState,
 };
+
+#[derive(Resource)]
+pub struct EnemySpawnTimer(pub Timer);
+
+impl Default for EnemySpawnTimer {
+    fn default() -> Self {
+        Self(Timer::from_seconds(2.0, TimerMode::Repeating))
+    }
+}
 
 pub fn plugin(app: &mut App) {
     app.add_message::<DamageMessage>();
