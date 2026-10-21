@@ -1,19 +1,4 @@
-use bevy::{
-    app::{App, Update},
-    ecs::{
-        component::Component,
-        entity::Entity,
-        message::MessageWriter,
-        query::With,
-        schedule::IntoScheduleConfigs,
-        system::{Query, Res, Single},
-    },
-    input::{ButtonInput, keyboard::KeyCode, mouse::MouseButton},
-    math::Vec3,
-    state::condition::in_state,
-    time::Time,
-    transform::components::Transform,
-};
+use bevy::prelude::*;
 
 use crate::{
     base::{AttackCooldown, AttackRange},
@@ -88,4 +73,17 @@ pub fn move_player(
         direction.x += 1.0;
     }
     transform.translation += direction.normalize_or_zero() * speed.0 * time.delta_secs();
+}
+
+pub fn spawn_player(commands: &mut Commands, asset_server: &AssetServer) {
+    let mut timer = Timer::from_seconds(0.5, TimerMode::Once);
+    timer.finish();
+    commands.spawn((
+        Player,
+        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("player.glb"))),
+        Transform::from_xyz(0.0, 0.4, 4.0),
+        AttackRange { range: 10.0 },
+        AttackCooldown(timer),
+        MovementSpeed(2.0),
+    ));
 }

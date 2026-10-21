@@ -54,7 +54,8 @@ pub struct StartGameButton;
 pub fn setup_main_menu(mut commands: Commands) {
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(-2.5, 4.5, 9.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_translation(Vec3::new(-10.081, 20.0, 23.668))
+            .looking_at(Vec3::ZERO, Vec3::Y),
     ));
     commands
         .spawn(Node {

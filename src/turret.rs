@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
 use crate::{base::AttackCooldown, damage::Health, enemy::Enemy, shoot::spawn_bullet};
 
@@ -128,10 +128,10 @@ pub fn handle_turret_attack(
             0.15, // size
         );
 
-        commands.spawn((
-            AudioPlayer::new(sounds.fire.clone()),
-            PlaybackSettings::DESPAWN,
-        ));
+        // commands.spawn((
+        //     AudioPlayer::new(sounds.fire.clone()),
+        //     PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.01)),
+        // ));
     }
 }
 

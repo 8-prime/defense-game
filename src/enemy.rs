@@ -1,17 +1,23 @@
 use bevy::{
     app::{App, Update},
+    asset::AssetServer,
+    color::Color,
     ecs::{
         component::Component,
         hierarchy::Children,
         query::{Changed, With},
         schedule::IntoScheduleConfigs,
-        system::Query,
+        system::{Commands, Query},
     },
-    math::Vec3,
+    gltf::GltfAssetLabel,
+    math::{Quat, Vec3},
     sprite::Text2d,
     state::condition::in_state,
+    text::{TextColor, TextFont},
     transform::components::Transform,
+    world_serialization::WorldAssetRoot,
 };
+// use bevy::prelude::*;
 
 use crate::{
     damage::{DamageMessage, Health, handle_deaths},
@@ -52,4 +58,21 @@ pub fn show_health(
             }
         }
     }
+}
+
+pub fn spawn_enemy(commands: &mut Commands, asset_server: &AssetServer, transform: Transform) {
+    commands
+        .spawn((
+            Enemy,
+            Health(100.0),
+            WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy.glb"))),
+            transform,
+        ))
+        .with_child((
+            Text2d::new("100"),
+            TextFont::from_font_size(24.0),
+            TextColor(Color::WHITE),
+            Transform::from_xyz(0.0, 0.0, 3.5)
+                .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
+        ));
 }

@@ -1,16 +1,66 @@
 use bevy::prelude::*;
 
-use crate::{
-    base::{AttackCooldown, AttackRange},
-    damage::Health,
-    enemy::Enemy,
-    player::{MovementSpeed, Player},
-    state::GameState,
-    turret::spawn_turret,
-};
+use crate::{enemy::spawn_enemy, player::spawn_player, state::GameState, turret::spawn_turret};
+
+#[derive(Component)]
+pub struct Generator;
+
+#[derive(Component)]
+pub struct GeneratorParts {
+    pub stabalizer: Entity,
+}
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Playing), spawn_level);
+    app.add_systems(Update, resolve_generator_parts);
+    app.add_systems(Update, animate_generator);
+}
+
+pub fn resolve_generator_parts(
+    mut commands: Commands,
+    generators: Query<Entity, (With<Generator>, Without<GeneratorParts>)>,
+    children: Query<&Children>,
+    names: Query<&Name>,
+) {
+    for generator in generators {
+        let mut stabalizer = None;
+
+        for entity in children.iter_descendants(generator) {
+            let Ok(name) = names.get(entity) else {
+                continue;
+            };
+
+            match name.as_str() {
+                "Stabalizer" => stabalizer = Some(entity),
+                _ => {}
+            }
+        }
+
+        let Some(stabalizer) = stabalizer else {
+            continue;
+        };
+
+        commands
+            .entity(generator)
+            .insert(GeneratorParts { stabalizer });
+    }
+}
+
+pub fn animate_generator(
+    time: Res<Time>,
+    generators: Query<&GeneratorParts, With<Generator>>,
+    globals: Query<&GlobalTransform>,
+    mut transforms: Query<&mut Transform>,
+) {
+    let angle = 90.0_f32.to_radians() * time.delta_secs();
+
+    for parts in &generators {
+        let Ok(mut transform) = transforms.get_mut(parts.stabalizer) else {
+            continue;
+        };
+
+        transform.rotate_y(angle);
+    }
 }
 
 pub fn spawn_level(
@@ -20,51 +70,31 @@ pub fn spawn_level(
     asset_server: Res<AssetServer>,
 ) {
     // Floor
+    commands.spawn((WorldAssetRoot(
+        asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb")),
+    ),));
+
     commands.spawn((
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(20.0, 15.0))),
-        MeshMaterial3d(materials.add(Color::srgb(0.2, 0.25, 0.2))),
+        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("power_core.glb"))),
+        Generator {},
     ));
 
-    // Shared cube mesh
-    let cube = meshes.add(Cuboid::new(0.8, 0.8, 0.8));
-
-    let enemy_material = materials.add(Color::srgb(0.9, 0.2, 0.2));
-    let player_material = materials.add(Color::srgb(0.2, 0.5, 1.0));
+    commands.spawn((WorldAssetRoot(
+        asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy_path.glb")),
+    ),));
 
     // 10 enemies in a row
     for i in 0..10 {
         let x = (i as f32 - 4.5) * 1.5;
 
-        commands
-            .spawn((
-                Enemy,
-                Health(100.0),
-                Mesh3d(cube.clone()),
-                MeshMaterial3d(enemy_material.clone()),
-                Transform::from_xyz(x, 0.4, -3.0),
-            ))
-            .with_child((
-                Text2d::new("100"),
-                TextFont::from_font_size(24.0),
-                TextColor(Color::WHITE),
-                Transform::from_xyz(0.0, 0.0, 3.5)
-                    .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
-            ));
+        spawn_enemy(
+            &mut commands,
+            &asset_server,
+            Transform::from_xyz(x, 0.4, -3.0),
+        );
     }
 
-    // Player below the enemies
-    let mut timer = Timer::from_seconds(0.5, TimerMode::Once);
-    timer.finish();
-
-    commands.spawn((
-        Player,
-        Mesh3d(cube),
-        MeshMaterial3d(player_material),
-        Transform::from_xyz(0.0, 0.4, 4.0),
-        AttackRange { range: 10.0 },
-        AttackCooldown(timer),
-        MovementSpeed(2.0),
-    ));
+    spawn_player(&mut commands, &asset_server);
 
     spawn_turret(
         &mut commands,
@@ -74,7 +104,7 @@ pub fn spawn_level(
             y: 0.4,
             z: 4.0,
         },
-        0.8,
+        1.0,
     );
 
     // Lighting
