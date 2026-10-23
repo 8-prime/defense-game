@@ -25,3 +25,6 @@ impl AttackRange {
         return dist <= self.range;
     }
 }
+
+#[derive(Component)]
+pub struct MovementSpeed(pub f32);

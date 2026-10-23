@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    base::{AttackCooldown, AttackRange},
+    base::{AttackCooldown, AttackRange, MovementSpeed},
     damage::DamageMessage,
     enemy::Enemy,
     state::GameState,
@@ -17,9 +17,6 @@ pub fn plugin(app: &mut App) {
 
 #[derive(Component)]
 pub struct Player;
-
-#[derive(Component)]
-pub struct MovementSpeed(pub f32);
 
 pub fn handle_player_attack(
     time: Res<Time>,
