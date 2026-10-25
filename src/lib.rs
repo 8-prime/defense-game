@@ -1,14 +1,16 @@
 use bevy::prelude::*;
 
-mod base;
+mod bullet;
 mod camera;
+mod core;
 mod damage;
 mod debug;
 mod enemy;
+mod generator;
+mod hitbox;
 mod levels;
 mod paths;
 mod player;
-mod shoot;
 mod state;
 mod turret;
 
@@ -18,10 +20,11 @@ pub fn plugin(app: &mut App) {
         damage::plugin,
         enemy::plugin,
         player::plugin,
-        shoot::plugin,
+        bullet::plugin,
         state::plugin,
         turret::plugin,
         camera::plugin,
         debug::plugin,
+        generator::plugin,
     ));
 }

@@ -21,8 +21,9 @@ use bevy::{
 // use bevy::prelude::*;
 
 use crate::{
-    base::MovementSpeed,
+    core::MovementSpeed,
     damage::{DamageMessage, Health, handle_deaths},
+    hitbox::on_enemy_loaded,
     paths::{PathFollower, Paths},
     state::GameState,
 };
@@ -40,7 +41,9 @@ pub fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
-pub struct Enemy;
+pub struct Enemy {
+    pub damage: u64,
+}
 
 pub fn scale_enemies(enemies: Query<(&Health, &mut Transform), (With<Enemy>, Changed<Health>)>) {
     for (health, mut transform) in enemies {
@@ -72,7 +75,7 @@ pub fn spawn_enemy(
 ) {
     commands
         .spawn((
-            Enemy,
+            Enemy { damage: 1 },
             Health(100.0),
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy.glb"))),
             PathFollower { path, waypoint },
@@ -85,7 +88,8 @@ pub fn spawn_enemy(
             TextColor(Color::WHITE),
             Transform::from_xyz(0.0, 0.0, 3.5)
                 .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
-        ));
+        ))
+        .observe(on_enemy_loaded);
 }
 
 pub fn move_enemy(

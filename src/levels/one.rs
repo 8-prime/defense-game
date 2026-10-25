@@ -1,16 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemy::spawn_enemy, paths::Paths, player::spawn_player, state::GameState, turret::spawn_turret,
+    enemy::spawn_enemy, generator::spawn_generator, paths::Paths, player::spawn_player,
+    state::GameState, turret::spawn_turret,
 };
-
-#[derive(Component)]
-pub struct Generator;
-
-#[derive(Component)]
-pub struct GeneratorParts {
-    pub stabalizer: Entity,
-}
 
 #[derive(Resource)]
 pub struct SpawnTarget(pub u64);
@@ -26,57 +19,8 @@ impl Default for EnemySpawnTimer {
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Playing), spawn_level);
-    app.add_systems(Update, resolve_generator_parts);
-    app.add_systems(Update, animate_generator);
     app.add_systems(Update, spawn_enemies.run_if(in_state(GameState::Playing)));
     app.add_systems(OnEnter(GameState::Playing), setup_enemy_resources);
-}
-
-pub fn resolve_generator_parts(
-    mut commands: Commands,
-    generators: Query<Entity, (With<Generator>, Without<GeneratorParts>)>,
-    children: Query<&Children>,
-    names: Query<&Name>,
-) {
-    for generator in generators {
-        let mut stabalizer = None;
-
-        for entity in children.iter_descendants(generator) {
-            let Ok(name) = names.get(entity) else {
-                continue;
-            };
-
-            match name.as_str() {
-                "Stabalizer" => stabalizer = Some(entity),
-                _ => {}
-            }
-        }
-
-        let Some(stabalizer) = stabalizer else {
-            continue;
-        };
-
-        commands
-            .entity(generator)
-            .insert(GeneratorParts { stabalizer });
-    }
-}
-
-pub fn animate_generator(
-    time: Res<Time>,
-    generators: Query<&GeneratorParts, With<Generator>>,
-    globals: Query<&GlobalTransform>,
-    mut transforms: Query<&mut Transform>,
-) {
-    let angle = 90.0_f32.to_radians() * time.delta_secs();
-
-    for parts in &generators {
-        let Ok(mut transform) = transforms.get_mut(parts.stabalizer) else {
-            continue;
-        };
-
-        transform.rotate_y(angle);
-    }
 }
 
 pub fn setup_enemy_resources(mut commands: Commands) {
@@ -141,10 +85,7 @@ pub fn spawn_level(
         asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb")),
     ),));
 
-    commands.spawn((
-        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("power_core.glb"))),
-        Generator {},
-    ));
+    spawn_generator(&mut commands, &asset_server);
 
     // // 10 enemies in a row
     // for i in 0..10 {
