@@ -1,9 +1,8 @@
-use bevy::{camera::primitives::Aabb, prelude::*};
+use bevy::{camera::primitives::Aabb, prelude::*, window::PrimaryWindow};
 
 use crate::{
     enemy::Enemy,
-    generator,
-    hitbox::{Hitbox, on_enemy_loaded, to_aabb2d},
+    hitbox::{Hitbox, on_hittable_loaded, to_aabb2d},
     state::GameState,
 };
 
@@ -15,13 +14,31 @@ pub struct GeneratorParts {
     pub stabalizer: Entity,
 }
 
+#[derive(Component)]
+pub struct GeneratorHpDisplay(pub Entity);
+
 pub fn plugin(app: &mut App) {
     app.add_systems(Update, resolve_generator_parts);
     app.add_systems(Update, animate_generator);
     app.add_systems(
         Update,
-        generator_damage.run_if(in_state(GameState::Playing)),
+        (generator_damage, update_generator_hp)
+            .chain()
+            .run_if(in_state(GameState::Playing)),
     );
+}
+
+pub fn update_generator_hp(
+    generators: Query<&Generator, Changed<Generator>>,
+    mut displays: Query<(&GeneratorHpDisplay, &mut Text)>,
+) {
+    for (display, mut text) in &mut displays {
+        let Ok(generator) = generators.get(display.0) else {
+            continue;
+        };
+
+        text.0 = format!("Generator Health: {}", generator.0);
+    }
 }
 
 fn generator_damage(
@@ -103,12 +120,27 @@ pub fn animate_generator(
 }
 
 pub fn spawn_generator(commands: &mut Commands, asset_server: &AssetServer) {
-    commands
+    let generator_entity = commands
         .spawn((
             WorldAssetRoot(
                 asset_server.load(GltfAssetLabel::Scene(0).from_asset("power_core.glb")),
             ),
             Generator(10),
         ))
-        .observe(on_enemy_loaded);
+        .observe(on_hittable_loaded)
+        .id();
+
+    commands.spawn((
+        GeneratorHpDisplay(generator_entity),
+        Text::new("Generator Health: 10"),
+        TextFont::from_font_size(12.0),
+        TextColor(Color::WHITE),
+        Node {
+            position_type: PositionType::Absolute,
+            top: px(15),
+            width: percent(100.0),
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+    ));
 }

@@ -103,36 +103,36 @@ pub fn handle_turret_attack(
     asset_server: Res<AssetServer>,
     globals: Query<&GlobalTransform>,
 ) {
-    for (mut cooldown, parts) in turrets {
-        cooldown.0.tick(time.delta());
-        if !cooldown.0.is_finished() {
-            return;
-        }
+    // for (mut cooldown, parts) in turrets {
+    //     cooldown.0.tick(time.delta());
+    //     if !cooldown.0.is_finished() {
+    //         return;
+    //     }
 
-        cooldown.0.reset();
+    //     cooldown.0.reset();
 
-        let Ok(muzzle) = globals.get(parts.muzzle) else {
-            continue;
-        };
+    //     let Ok(muzzle) = globals.get(parts.muzzle) else {
+    //         continue;
+    //     };
 
-        let pos = muzzle.translation();
-        let dir = muzzle.forward().as_vec3();
+    //     let pos = muzzle.translation();
+    //     let dir = muzzle.forward().as_vec3();
 
-        spawn_bullet(
-            &mut commands,
-            &asset_server,
-            dir,
-            pos,
-            10.0, // speed
-            33.0, // damage
-            0.15, // size
-        );
+    //     spawn_bullet(
+    //         &mut commands,
+    //         &asset_server,
+    //         dir,
+    //         pos,
+    //         10.0, // speed
+    //         33.0, // damage
+    //         0.15, // size
+    //     );
 
-        // commands.spawn((
-        //     AudioPlayer::new(sounds.fire.clone()),
-        //     PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.01)),
-        // ));
-    }
+    //     // commands.spawn((
+    //     //     AudioPlayer::new(sounds.fire.clone()),
+    //     //     PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.01)),
+    //     // ));
+    // }
 }
 
 pub fn spawn_turret(

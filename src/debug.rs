@@ -1,4 +1,6 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{camera::primitives::Aabb, prelude::*, window::PrimaryWindow};
+
+use crate::hitbox::{Hitbox, to_aabb2d};
 
 #[derive(Component)]
 pub struct MouseCoordinates;
@@ -6,6 +8,7 @@ pub struct MouseCoordinates;
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, setup_mouse_coordinates);
     app.add_systems(Update, determine_coordinates);
+    app.add_systems(Update, draw_hitboxes);
 }
 
 pub fn setup_mouse_coordinates(mut commands: Commands) {
@@ -47,4 +50,35 @@ pub fn determine_coordinates(
         "X: {:.2} Y: {:.2} Z: {:.2}",
         position.x, position.y, position.z
     ))
+}
+
+pub fn draw_hitboxes(
+    entities: Query<&Hitbox>,
+    hitboxes: Query<(&Aabb, &GlobalTransform)>,
+    mut gizmos: Gizmos,
+) {
+    for hitbox in &entities {
+        let Ok((aabb, transform)) = hitboxes.get(hitbox.0) else {
+            continue;
+        };
+
+        let bounds = to_aabb2d(aabb, transform);
+
+        let min = bounds.min;
+        let max = bounds.max;
+
+        // Draw rectangles slightly above ground level
+        let y = 0.1;
+
+        gizmos.linestrip(
+            [
+                Vec3::new(min.x, y, min.y),
+                Vec3::new(max.x, y, min.y),
+                Vec3::new(max.x, y, max.y),
+                Vec3::new(min.x, y, max.y),
+                Vec3::new(min.x, y, min.y),
+            ],
+            Color::srgb(0.0, 1.0, 0.0),
+        );
+    }
 }

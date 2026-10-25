@@ -23,7 +23,7 @@ use bevy::{
 use crate::{
     core::MovementSpeed,
     damage::{DamageMessage, Health, handle_deaths},
-    hitbox::on_enemy_loaded,
+    hitbox::on_hittable_loaded,
     paths::{PathFollower, Paths},
     state::GameState,
 };
@@ -89,7 +89,7 @@ pub fn spawn_enemy(
             Transform::from_xyz(0.0, 0.0, 3.5)
                 .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
         ))
-        .observe(on_enemy_loaded);
+        .observe(on_hittable_loaded);
 }
 
 pub fn move_enemy(

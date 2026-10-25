@@ -22,7 +22,7 @@ use bevy::{
 use crate::{
     damage::DamageMessage,
     enemy::Enemy,
-    hitbox::{Hitbox, on_enemy_loaded, to_aabb2d},
+    hitbox::{Hitbox, on_hittable_loaded, to_aabb2d},
     state::GameState,
 };
 
@@ -105,5 +105,5 @@ pub fn spawn_bullet(
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("bullet.glb"))),
             Transform::from_translation(position).with_scale(Vec3::splat(2.0)),
         ))
-        .observe(on_enemy_loaded);
+        .observe(on_hittable_loaded);
 }
