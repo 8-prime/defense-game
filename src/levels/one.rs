@@ -1,8 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemy::spawn_enemy, generator::spawn_generator, paths::Paths, player::spawn_player,
-    state::GameState, turret::spawn_turret,
+    enemy::spawn_enemy,
+    generator::spawn_generator,
+    paths::Paths,
+    player::spawn_player,
+    state::GameState,
+    towers::{self, TowerAssets, tower_type::TowerType},
 };
 
 #[derive(Resource)]
@@ -77,6 +81,7 @@ pub fn spawn_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    tower_assets: Res<TowerAssets>,
     asset_server: Res<AssetServer>,
 ) {
     commands.insert_resource(EnemySpawnTimer::default());
@@ -100,15 +105,15 @@ pub fn spawn_level(
 
     spawn_player(&mut commands, &asset_server);
 
-    spawn_turret(
+    towers::spawn_tower(
         &mut commands,
-        &asset_server,
+        TowerType::Turret,
         Vec3 {
             x: 3.0,
             y: 0.4,
             z: 4.0,
         },
-        0.8,
+        &tower_assets,
     );
 
     // Lighting

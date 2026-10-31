@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{bullet::spawn_bullet, core::AttackCooldown, damage::Health, enemy::Enemy};
+use crate::{
+    bullet::spawn_bullet, core::AttackCooldown, damage::Health, enemy::Enemy, towers::TowerAssets,
+};
 
 #[derive(Component)]
 pub struct Turret;
@@ -103,48 +105,50 @@ pub fn handle_turret_attack(
     asset_server: Res<AssetServer>,
     globals: Query<&GlobalTransform>,
 ) {
-    // for (mut cooldown, parts) in turrets {
-    //     cooldown.0.tick(time.delta());
-    //     if !cooldown.0.is_finished() {
-    //         return;
-    //     }
+    for (mut cooldown, parts) in turrets {
+        cooldown.0.tick(time.delta());
+        if !cooldown.0.is_finished() {
+            return;
+        }
 
-    //     cooldown.0.reset();
+        cooldown.0.reset();
 
-    //     let Ok(muzzle) = globals.get(parts.muzzle) else {
-    //         continue;
-    //     };
+        let Ok(muzzle) = globals.get(parts.muzzle) else {
+            continue;
+        };
 
-    //     let pos = muzzle.translation();
-    //     let dir = muzzle.forward().as_vec3();
+        let pos = muzzle.translation();
+        let dir = muzzle.forward().as_vec3();
 
-    //     spawn_bullet(
-    //         &mut commands,
-    //         &asset_server,
-    //         dir,
-    //         pos,
-    //         10.0, // speed
-    //         33.0, // damage
-    //         0.15, // size
-    //     );
+        spawn_bullet(
+            &mut commands,
+            &asset_server,
+            dir,
+            pos,
+            30.0, // speed
+            33.0, // damage
+            0.15, // size
+        );
 
-    //     // commands.spawn((
-    //     //     AudioPlayer::new(sounds.fire.clone()),
-    //     //     PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.01)),
-    //     // ));
-    // }
+        // commands.spawn((
+        //     AudioPlayer::new(sounds.fire.clone()),
+        //     PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.01)),
+        // ));
+    }
 }
 
-pub fn spawn_turret(
-    commands: &mut Commands,
-    asset_server: &AssetServer,
-    position: Vec3,
-    size: f32,
-) {
+pub fn spawn_turret(commands: &mut Commands, position: Vec3, tower_assets: &TowerAssets) {
+    let Some(visuals) = tower_assets
+        .towers
+        .get(&super::tower_type::TowerType::Turret)
+    else {
+        return;
+    };
+
     commands.spawn((
         Turret,
         AttackCooldown(Timer::from_seconds(0.1, TimerMode::Repeating)),
-        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("turret.glb"))),
-        Transform::from_translation(position).with_scale(Vec3::splat(size)),
+        WorldAssetRoot(visuals.scene.clone()),
+        Transform::from_translation(position).with_scale(Vec3::splat(1.0)),
     ));
 }

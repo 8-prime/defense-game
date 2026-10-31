@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 mod bullet;
 mod camera;
+mod construction;
 mod core;
 mod damage;
 mod debug;
@@ -12,7 +13,7 @@ mod levels;
 mod paths;
 mod player;
 mod state;
-mod turret;
+mod towers;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((
@@ -22,7 +23,8 @@ pub fn plugin(app: &mut App) {
         player::plugin,
         bullet::plugin,
         state::plugin,
-        turret::plugin,
+        towers::plugin,
+        construction::plugin,
         camera::plugin,
         debug::plugin,
         generator::plugin,
