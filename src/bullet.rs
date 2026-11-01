@@ -95,11 +95,15 @@ pub fn spawn_bullet(
     damage: f32,
     size: f32,
 ) {
+    let target_transform = Transform::from_translation(position)
+        .with_scale(Vec3::splat(size))
+        .looking_to(dir, Vec3::Y);
+
     commands
         .spawn((
             Bullet { dir, speed, damage },
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("bullet.glb"))),
-            Transform::from_translation(position).with_scale(Vec3::splat(size)),
+            target_transform,
         ))
         .observe(on_hittable_loaded);
 }
