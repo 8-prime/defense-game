@@ -1,8 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemies::slime::spawn_enemy, generator::spawn_generator, levels::path::enemy_path,
-    paths::Paths, player::spawn_player, state::GameState,
+    enemies::slime::{SlimeColor, SlimeMaterials, spawn_enemy},
+    generator::spawn_generator,
+    levels::path::enemy_path,
+    paths::Paths,
+    player::spawn_player,
+    state::GameState,
 };
 
 #[derive(Resource)]
@@ -36,6 +40,7 @@ pub fn spawn_enemies(
     mut commands: Commands,
     mut spawn_timer: ResMut<EnemySpawnTimer>,
     mut spawn_target: ResMut<SpawnTarget>,
+    materials: Res<SlimeMaterials>,
     enemy_paths: Res<Paths>,
     asset_server: Res<AssetServer>,
 ) {
@@ -61,6 +66,8 @@ pub fn spawn_enemies(
         &mut commands,
         &asset_server,
         Transform::from_translation(*start),
+        &materials,
+        SlimeColor::Green,
         0,
         1,
     );

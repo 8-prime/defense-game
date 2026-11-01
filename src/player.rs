@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     core::{AttackCooldown, AttackRange, MovementSpeed},
     damage::DamageMessage,
-    enemies::slime::Enemy,
+    enemies::Enemy,
     state::GameState,
 };
 

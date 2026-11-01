@@ -19,3 +19,7 @@ opt-level = 3
 codegen-units = 1
 lto = "thin"
 strip = true
+
+[package.metadata.wgsl-analyzer]
+edition = "2026_pre"
+root = "assets/shaders"

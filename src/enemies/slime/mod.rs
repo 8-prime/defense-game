@@ -1,28 +1,34 @@
+use std::collections::HashMap;
+
 use bevy::{
-    app::{App, Update},
-    asset::AssetServer,
+    app::{App, Startup, Update},
+    asset::{AssetServer, Assets, Handle},
     color::Color,
     ecs::{
-        component::Component,
         hierarchy::Children,
         query::{Changed, With},
+        resource::Resource,
         schedule::IntoScheduleConfigs,
-        system::{Commands, Query, Res},
+        system::{Commands, Query, Res, ResMut},
     },
     gltf::GltfAssetLabel,
     math::{Quat, Vec3},
+    pbr::{MeshMaterial3d, StandardMaterial, StandardMaterialUniform},
+    reflect::map::map_partial_cmp,
+    render::occlusion_culling,
     sprite::Text2d,
     state::condition::in_state,
     text::{TextColor, TextFont},
     time::Time,
     transform::components::Transform,
+    utils::default,
     world_serialization::WorldAssetRoot,
 };
-// use bevy::prelude::*;
 
 use crate::{
     core::MovementSpeed,
     damage::{DamageMessage, Health, handle_deaths},
+    enemies::Enemy,
     hitbox::on_hittable_loaded,
     paths::{PathFollower, Paths},
     state::GameState,
@@ -38,11 +44,53 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(GameState::Playing))
             .after(handle_deaths),
     );
+    app.add_systems(Startup, setup_materials);
 }
 
-#[derive(Component)]
-pub struct Enemy {
-    pub damage: u64,
+#[derive(Resource)]
+pub struct SlimeMaterials {
+    pub materials: HashMap<SlimeColor, Handle<StandardMaterial>>,
+}
+
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+pub enum SlimeColor {
+    Green,
+    Red,
+    Blue,
+}
+
+impl SlimeColor {
+    pub const ALL: [Self; 3] = [Self::Blue, Self::Green, Self::Red];
+
+    pub fn as_color(&self) -> Color {
+        match self {
+            SlimeColor::Green => Color::srgb(0.199999, 0.435301, 0.0),
+            SlimeColor::Red => Color::srgb(0.0, 0.113507, 0.435312),
+            SlimeColor::Blue => Color::srgb(0.435317, 0.024841, 0.004583),
+        }
+    }
+}
+
+pub fn setup_materials(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
+    let mut slime_materials = HashMap::new();
+
+    for slime_color in SlimeColor::ALL {
+        slime_materials.insert(
+            slime_color,
+            materials.add(StandardMaterial {
+                base_color: slime_color.as_color(),
+                metallic: 0.0,
+                perceptual_roughness: 0.18,
+                ior: 1.4,
+                diffuse_transmission: 0.3,
+                ..default()
+            }),
+        );
+    }
+
+    commands.insert_resource(SlimeMaterials {
+        materials: slime_materials,
+    });
 }
 
 pub fn scale_enemies(enemies: Query<(&Health, &mut Transform), (With<Enemy>, Changed<Health>)>) {
@@ -70,14 +118,21 @@ pub fn spawn_enemy(
     commands: &mut Commands,
     asset_server: &AssetServer,
     transform: Transform,
+    materials: &SlimeMaterials,
+    slime_color: SlimeColor,
     path: usize,
     waypoint: usize,
 ) {
+    let Some(handle) = materials.materials.get(&slime_color) else {
+        return;
+    };
+
     commands
         .spawn((
             Enemy { damage: 1 },
             Health(100.0),
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy.glb"))),
+            MeshMaterial3d(handle.clone()),
             PathFollower { path, waypoint },
             MovementSpeed(2.0),
             transform,

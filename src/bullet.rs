@@ -21,7 +21,7 @@ use bevy::{
 
 use crate::{
     damage::DamageMessage,
-    enemies::slime::Enemy,
+    enemies::Enemy,
     hitbox::{Hitbox, on_hittable_loaded, to_aabb2d},
     state::GameState,
 };

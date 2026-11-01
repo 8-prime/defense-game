@@ -4,7 +4,7 @@ use crate::{
     bullet::spawn_bullet,
     core::AttackCooldown,
     damage::Health,
-    enemies::slime::Enemy,
+    enemies::Enemy,
     towers::{TowerAssets, tower_type::TowerType},
 };
 
