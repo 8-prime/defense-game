@@ -151,7 +151,7 @@ pub fn spawn_turret(commands: &mut Commands, position: Vec3, tower_assets: &Towe
 
     commands.spawn((
         Turret,
-        AttackCooldown(Timer::from_seconds(0.1, TimerMode::Repeating)),
+        AttackCooldown(Timer::from_seconds(1.0, TimerMode::Repeating)),
         WorldAssetRoot(visuals.scene.clone()),
         Transform::from_translation(position)
             .with_scale(Vec3::splat(TowerType::Turret.define().scale)),

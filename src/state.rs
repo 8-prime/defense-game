@@ -25,6 +25,11 @@ pub fn plugin(app: &mut App) {
     app.init_state::<GameState>()
         .add_systems(OnEnter(GameState::MainMenu), setup_main_menu);
     app.add_systems(OnExit(GameState::MainMenu), tear_down_main_menu);
+
+    app.init_state::<GameState>()
+        .add_systems(OnEnter(GameState::GameOver), setup_game_over_menu);
+    app.add_systems(OnExit(GameState::GameOver), tear_down_game_over_menu);
+
     app.add_systems(Update, handle_start_button);
 }
 
@@ -50,6 +55,9 @@ pub struct LevelState {
 
 #[derive(Component)]
 pub struct StartGameButton;
+
+#[derive(Component)]
+pub struct MainMenuButton;
 
 pub fn setup_main_menu(mut commands: Commands) {
     commands.spawn((
@@ -81,6 +89,45 @@ pub fn setup_main_menu(mut commands: Commands) {
         });
 }
 
+pub fn setup_game_over_menu(mut commands: Commands) {
+    commands
+        .spawn(Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    Button,
+                    StartGameButton,
+                    Node {
+                        width: Val::Px(200.0),
+                        height: Val::Px(60.0),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                ))
+                .with_child((Text::new("Restart Game"), TextFont::from_font_size(24.0)));
+            parent
+                .spawn((
+                    Button,
+                    MainMenuButton,
+                    Node {
+                        width: Val::Px(200.0),
+                        height: Val::Px(60.0),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                ))
+                .with_child((Text::new("Main Menu"), TextFont::from_font_size(24.0)));
+        });
+}
+
 pub fn handle_start_button(
     buttons: Query<Has<Pressed>, With<StartGameButton>>,
     mut game_state: ResMut<NextState<GameState>>,
@@ -98,5 +145,19 @@ pub fn tear_down_main_menu(
 ) {
     for start_button in start_game_buttons {
         commands.entity(start_button).despawn();
+    }
+}
+
+pub fn tear_down_game_over_menu(
+    mut commands: Commands,
+    start_game_buttons: Query<Entity, With<StartGameButton>>,
+    main_menu_buttons: Query<Entity, With<MainMenuButton>>,
+) {
+    for start_button in start_game_buttons {
+        commands.entity(start_button).despawn();
+    }
+
+    for main_menu in main_menu_buttons {
+        commands.entity(main_menu).despawn();
     }
 }

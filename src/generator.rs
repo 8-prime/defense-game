@@ -46,6 +46,7 @@ fn generator_damage(
     generators: Query<(&Hitbox, &mut Generator)>,
     enemies: Query<(Entity, &Hitbox, &Enemy)>,
     hitboxes: Query<(&Aabb, &GlobalTransform)>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     for (generator_hitbox, mut generator) in generators {
         let Ok((generator_aabb, generator_transform)) = hitboxes.get(generator_hitbox.0) else {
@@ -67,6 +68,11 @@ fn generator_damage(
 
             commands.entity(enemy_entity).despawn();
             generator.0 -= enemy.damage;
+
+            if generator.0 <= 0 {
+                game_state.set(GameState::GameOver);
+            }
+
             break;
         }
     }

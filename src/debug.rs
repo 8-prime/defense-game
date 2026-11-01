@@ -5,10 +5,23 @@ use crate::hitbox::{Hitbox, to_aabb2d};
 #[derive(Component)]
 pub struct MouseCoordinates;
 
+#[derive(Resource)]
+pub struct DebugOptions {
+    pub active: bool,
+}
+
+impl Default for DebugOptions {
+    fn default() -> Self {
+        Self { active: false }
+    }
+}
+
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, setup_mouse_coordinates);
     app.add_systems(Update, determine_coordinates);
     app.add_systems(Update, draw_hitboxes);
+    app.add_systems(Update, toggle_debug);
+    app.insert_resource(DebugOptions::default());
 }
 
 pub fn setup_mouse_coordinates(mut commands: Commands) {
@@ -27,10 +40,15 @@ pub fn setup_mouse_coordinates(mut commands: Commands) {
 }
 
 pub fn determine_coordinates(
+    opts: Res<DebugOptions>,
     window: Single<&Window, With<PrimaryWindow>>,
     camera: Single<(&Camera, &GlobalTransform), With<Camera3d>>,
     mut text: Single<&mut Text, With<MouseCoordinates>>,
 ) {
+    if !opts.active {
+        return;
+    }
+
     let Some(cursor) = window.cursor_position() else {
         return;
     };
@@ -53,10 +71,15 @@ pub fn determine_coordinates(
 }
 
 pub fn draw_hitboxes(
+    opts: Res<DebugOptions>,
     entities: Query<&Hitbox>,
     hitboxes: Query<(&Aabb, &GlobalTransform)>,
     mut gizmos: Gizmos,
 ) {
+    if !opts.active {
+        return;
+    }
+
     for hitbox in &entities {
         let Ok((aabb, transform)) = hitboxes.get(hitbox.0) else {
             continue;
@@ -80,5 +103,11 @@ pub fn draw_hitboxes(
             ],
             Color::srgb(0.0, 1.0, 0.0),
         );
+    }
+}
+
+pub fn toggle_debug(mut opts: ResMut<DebugOptions>, keyboard: Res<ButtonInput<KeyCode>>) {
+    if keyboard.pressed(KeyCode::ControlLeft) && keyboard.pressed(KeyCode::KeyG) {
+        opts.active = !opts.active;
     }
 }

@@ -4,6 +4,7 @@ mod bullet;
 mod camera;
 mod construction;
 mod core;
+mod currency;
 mod damage;
 mod debug;
 mod enemy;
