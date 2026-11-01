@@ -2,9 +2,7 @@ use bevy::prelude::*;
 use bevy::ui::Pressed;
 use bevy::{ecs::name::Name, picking::hover::Hovered, ui_widgets::Button};
 
-use crate::construction::placement::{
-    ActivePlacement, PlacementState, TowerPreview, begin_placement, stop_placement,
-};
+use crate::construction::placement::{PlacementState, begin_placement, stop_placement};
 use crate::state::GameState;
 use crate::towers::{TowerAssets, tower_type::TowerType};
 
@@ -14,11 +12,16 @@ pub fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
+pub struct ConstructionUi;
+
+#[derive(Component)]
 pub struct TowerButton(TowerType);
 
 pub fn spawn_construction_ui(mut commands: Commands, tower_assets: Res<TowerAssets>) {
     commands
         .spawn((
+            ConstructionUi,
+            Hovered::default(),
             Name::new("Construction UI"),
             Node {
                 position_type: PositionType::Absolute,

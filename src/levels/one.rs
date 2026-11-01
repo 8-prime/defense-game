@@ -1,12 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemy::spawn_enemy,
-    generator::spawn_generator,
-    paths::Paths,
-    player::spawn_player,
-    state::GameState,
-    towers::{self, TowerAssets, tower_type::TowerType},
+    enemy::spawn_enemy, generator::spawn_generator, levels::path::enemy_path, paths::Paths,
+    player::spawn_player, state::GameState,
 };
 
 #[derive(Resource)]
@@ -29,16 +25,10 @@ pub fn plugin(app: &mut App) {
 
 pub fn setup_enemy_resources(mut commands: Commands) {
     commands.insert_resource(Paths {
-        paths: vec![vec![
-            Vec3::new(-10.0, 0.0, -10.0),
-            Vec3::new(10.0, 0.0, -10.0),
-            Vec3::new(10.0, 0.0, 10.0),
-            Vec3::new(-10.0, 0.0, 10.0),
-            Vec3::new(0.0, 0.0, 0.0),
-        ]],
+        paths: vec![enemy_path()],
     });
 
-    commands.insert_resource(SpawnTarget(5));
+    commands.insert_resource(SpawnTarget(50));
 }
 
 pub fn spawn_enemies(
@@ -79,10 +69,8 @@ pub fn spawn_enemies(
 
 pub fn spawn_level(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    tower_assets: Res<TowerAssets>,
     asset_server: Res<AssetServer>,
+    camera: Single<Entity, With<Camera3d>>,
 ) {
     commands.insert_resource(EnemySpawnTimer::default());
     // Floor
@@ -91,31 +79,14 @@ pub fn spawn_level(
     ),));
 
     spawn_generator(&mut commands, &asset_server);
-
-    // // 10 enemies in a row
-    // for i in 0..10 {
-    //     let x = (i as f32 - 4.5) * 1.5;
-
-    //     spawn_enemy(
-    //         &mut commands,
-    //         &asset_server,
-    //         Transform::from_xyz(x, 0.4, -3.0),
-    //     );
-    // }
-
     spawn_player(&mut commands, &asset_server);
 
-    towers::spawn_tower(
-        &mut commands,
-        TowerType::Turret,
-        Vec3 {
-            x: 3.0,
-            y: 0.4,
-            z: 4.0,
-        },
-        &tower_assets,
-    );
-
     // Lighting
-    commands.spawn((PointLight::default(), Transform::from_xyz(0.0, 10.0, 0.0)));
+    commands.spawn((
+        DirectionalLight {
+            illuminance: 15_000.0,
+            ..default()
+        },
+        Transform::from_xyz(50.0, 100.0, 50.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
 }

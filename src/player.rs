@@ -33,15 +33,12 @@ pub fn handle_player_attack(
     if !cooldown.0.is_finished() {
         return;
     }
-    println!("Attacking {} enemies", enemies.iter().len());
     cooldown.0.reset();
 
     for (entity, enemy) in enemies {
         if !range.in_range(*position, enemy) {
-            println!("Enemy {} out of range", entity);
             continue;
         }
-        println!("Attacking {}", entity);
         message_writer.write(DamageMessage {
             amount: 33.0,
             target: entity,

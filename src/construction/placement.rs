@@ -1,6 +1,9 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{picking::hover::Hovered, prelude::*, window::PrimaryWindow};
 
-use crate::towers::{self, TowerAssets, tower_type::TowerType};
+use crate::{
+    construction::{self, ui::ConstructionUi},
+    towers::{self, TowerAssets, tower_type::TowerType},
+};
 
 pub fn plugin(app: &mut App) {
     app.insert_resource(PlacementState { active: None });
@@ -94,7 +97,13 @@ pub fn handle_placement(
     mut placement: ResMut<PlacementState>,
     transforms: Query<&Transform, With<TowerPreview>>,
     tower_assets: Res<TowerAssets>,
+    construction_ui: Single<&Hovered, With<ConstructionUi>>,
 ) {
+    if construction_ui.0 {
+        println!("Hovering ui");
+        return;
+    }
+
     let Some(active) = &placement.active else {
         return;
     };

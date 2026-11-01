@@ -105,7 +105,6 @@ pub fn resolve_generator_parts(
 pub fn animate_generator(
     time: Res<Time>,
     generators: Query<&GeneratorParts, With<Generator>>,
-    globals: Query<&GlobalTransform>,
     mut transforms: Query<&mut Transform>,
 ) {
     let angle = 90.0_f32.to_radians() * time.delta_secs();
