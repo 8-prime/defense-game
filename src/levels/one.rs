@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemy::spawn_enemy, generator::spawn_generator, levels::path::enemy_path, paths::Paths,
-    player::spawn_player, state::GameState,
+    enemies::slime::spawn_enemy, generator::spawn_generator, levels::path::enemy_path,
+    paths::Paths, player::spawn_player, state::GameState,
 };
 
 #[derive(Resource)]

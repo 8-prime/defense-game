@@ -7,7 +7,7 @@ mod core;
 mod currency;
 mod damage;
 mod debug;
-mod enemy;
+mod enemies;
 mod generator;
 mod hitbox;
 mod levels;
@@ -20,7 +20,7 @@ pub fn plugin(app: &mut App) {
     app.add_plugins((
         levels::plugin,
         damage::plugin,
-        enemy::plugin,
+        enemies::plugin,
         player::plugin,
         bullet::plugin,
         state::plugin,
