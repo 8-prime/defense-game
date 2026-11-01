@@ -1,10 +1,10 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use crate::towers::{TowerAssets, tower_type::TowerType};
+use crate::towers::{self, TowerAssets, tower_type::TowerType};
 
 pub fn plugin(app: &mut App) {
     app.insert_resource(PlacementState { active: None });
-    app.add_systems(Update, (update_placement).chain());
+    app.add_systems(Update, (update_placement, handle_placement).chain());
 }
 
 #[derive(Resource)]
@@ -12,6 +12,7 @@ pub struct PlacementState {
     pub active: Option<ActivePlacement>,
 }
 
+#[derive(Clone, Copy)]
 pub struct ActivePlacement {
     pub tower_type: TowerType,
     pub preview_entity: Entity,
@@ -85,4 +86,35 @@ pub fn update_placement(
     };
 
     transform.translation = position;
+}
+
+pub fn handle_placement(
+    mut commands: Commands,
+    mouse: Res<ButtonInput<MouseButton>>,
+    mut placement: ResMut<PlacementState>,
+    transforms: Query<&Transform, With<TowerPreview>>,
+    tower_assets: Res<TowerAssets>,
+) {
+    let Some(active) = &placement.active else {
+        return;
+    };
+
+    let Ok(transform) = transforms.get(active.preview_entity) else {
+        return;
+    };
+
+    if !mouse.just_pressed(MouseButton::Left) {
+        return;
+    }
+
+    let tower_type = active.tower_type;
+
+    stop_placement(&mut commands, &mut placement);
+
+    towers::spawn_tower(
+        &mut commands,
+        tower_type,
+        transform.translation,
+        &tower_assets,
+    );
 }
