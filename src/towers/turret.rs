@@ -108,7 +108,7 @@ pub fn handle_turret_attack(
     for (mut cooldown, parts) in turrets {
         cooldown.0.tick(time.delta());
         if !cooldown.0.is_finished() {
-            return;
+            continue;
         }
 
         cooldown.0.reset();
