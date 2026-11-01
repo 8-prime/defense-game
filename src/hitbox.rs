@@ -41,8 +41,6 @@ pub fn on_hittable_loaded(
         // Hide the entire hitbox hierarchy
         commands.entity(node).insert(Visibility::Hidden);
 
-        info!("Hitbox mesh found: {:?} (node: {:?})", mesh_entity, node);
-
         break;
     }
 }

@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    bullet::spawn_bullet, core::AttackCooldown, damage::Health, enemy::Enemy, towers::TowerAssets,
+    bullet::spawn_bullet,
+    core::AttackCooldown,
+    damage::Health,
+    enemy::Enemy,
+    towers::{TowerAssets, tower_type::TowerType},
 };
 
 #[derive(Component)]
@@ -125,9 +129,9 @@ pub fn handle_turret_attack(
             &asset_server,
             dir,
             pos,
-            30.0, // speed
+            10.0, // speed
             33.0, // damage
-            2.0,  // size
+            5.0,  // size
         );
 
         // commands.spawn((
@@ -149,6 +153,7 @@ pub fn spawn_turret(commands: &mut Commands, position: Vec3, tower_assets: &Towe
         Turret,
         AttackCooldown(Timer::from_seconds(0.1, TimerMode::Repeating)),
         WorldAssetRoot(visuals.scene.clone()),
-        Transform::from_translation(position).with_scale(Vec3::splat(1.0)),
+        Transform::from_translation(position)
+            .with_scale(Vec3::splat(TowerType::Turret.define().scale)),
     ));
 }

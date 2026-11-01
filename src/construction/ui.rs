@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::ui::Pressed;
+use bevy::ui_widgets::Activate;
 use bevy::{ecs::name::Name, picking::hover::Hovered, ui_widgets::Button};
 
 use crate::construction::placement::{PlacementState, begin_placement, stop_placement};
@@ -8,7 +8,7 @@ use crate::towers::{TowerAssets, tower_type::TowerType};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Playing), spawn_construction_ui);
-    app.add_systems(Update, handle_tower_button);
+    app.add_observer(handle_tower_button);
 }
 
 #[derive(Component)]
@@ -69,27 +69,26 @@ pub fn spawn_construction_ui(mut commands: Commands, tower_assets: Res<TowerAsse
 }
 
 pub fn handle_tower_button(
-    buttons: Query<(Has<Pressed>, &TowerButton)>,
+    event: On<Activate>,
+    buttons: Query<(&TowerButton)>,
     mut placement_state: ResMut<PlacementState>,
     mut commands: Commands,
     assets: Res<TowerAssets>,
 ) {
-    for (pressed, button) in &buttons {
-        if !pressed {
-            continue;
-        }
+    let Ok(button) = buttons.get(event.entity) else {
+        return;
+    };
 
-        let tower_type = button.0;
+    let tower_type = button.0;
 
-        let already_selected = placement_state
-            .active
-            .as_ref()
-            .is_some_and(|active| active.tower_type == tower_type);
+    let already_selected = placement_state
+        .active
+        .as_ref()
+        .is_some_and(|active| active.tower_type == tower_type);
 
-        if already_selected {
-            stop_placement(&mut commands, &mut placement_state);
-        } else {
-            begin_placement(&mut commands, &mut placement_state, &assets, tower_type);
-        }
+    if already_selected {
+        stop_placement(&mut commands, &mut placement_state);
+    } else {
+        begin_placement(&mut commands, &mut placement_state, &assets, tower_type);
     }
 }

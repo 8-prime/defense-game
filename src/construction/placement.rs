@@ -48,7 +48,7 @@ pub fn begin_placement(
         .spawn((
             TowerPreview,
             WorldAssetRoot(visuals.scene.clone()),
-            Transform::default(),
+            Transform::default().with_scale(Vec3::splat(TowerType::Turret.define().scale)),
             Visibility::default(),
         ))
         .id();
@@ -100,7 +100,6 @@ pub fn handle_placement(
     construction_ui: Single<&Hovered, With<ConstructionUi>>,
 ) {
     if construction_ui.0 {
-        println!("Hovering ui");
         return;
     }
 

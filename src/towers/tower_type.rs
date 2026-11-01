@@ -11,7 +11,8 @@ impl TowerType {
             TowerType::Turret => TowerDefinition {
                 name: "Turret",
                 cost: 10,
-                rnage: 10.0,
+                range: 10.0,
+                scale: 2.0,
                 scene_path: "turret.glb",
                 icon_path: "ui/turret.png",
             },
@@ -22,7 +23,8 @@ impl TowerType {
 pub struct TowerDefinition {
     pub name: &'static str,
     pub cost: u64,
-    pub rnage: f32,
+    pub range: f32,
+    pub scale: f32,
     pub scene_path: &'static str,
     pub icon_path: &'static str,
 }
