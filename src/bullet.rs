@@ -42,12 +42,8 @@ pub struct Bullet {
     pub damage: f32,
 }
 
-fn bullet_movement(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut bullets: Query<(Entity, &mut Transform, &Bullet)>,
-) {
-    for (e, mut transform, bullet) in &mut bullets.iter_mut() {
+fn bullet_movement(time: Res<Time>, mut bullets: Query<(Entity, &mut Transform, &Bullet)>) {
+    for (_, mut transform, bullet) in &mut bullets.iter_mut() {
         transform.translation += bullet.dir * bullet.speed * time.delta_secs();
     }
 
@@ -103,7 +99,7 @@ pub fn spawn_bullet(
         .spawn((
             Bullet { dir, speed, damage },
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("bullet.glb"))),
-            Transform::from_translation(position).with_scale(Vec3::splat(2.0)),
+            Transform::from_translation(position).with_scale(Vec3::splat(size)),
         ))
         .observe(on_hittable_loaded);
 }

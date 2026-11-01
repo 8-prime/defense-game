@@ -9,6 +9,7 @@ mod turret;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, load_tower_assets);
+    turret::plugin(app);
 }
 
 #[derive(Resource)]

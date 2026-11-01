@@ -1,4 +1,4 @@
-use bevy::{camera::primitives::Aabb, prelude::*, window::PrimaryWindow};
+use bevy::{camera::primitives::Aabb, prelude::*};
 
 use crate::{
     enemy::Enemy,

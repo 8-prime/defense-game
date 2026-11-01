@@ -1,4 +1,4 @@
-#[derive(Eq, PartialEq, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Debug, Clone, Copy)]
 pub enum TowerType {
     Turret,
 }

@@ -127,7 +127,7 @@ pub fn handle_turret_attack(
             pos,
             30.0, // speed
             33.0, // damage
-            0.15, // size
+            2.0,  // size
         );
 
         // commands.spawn((
