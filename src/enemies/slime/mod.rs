@@ -5,7 +5,9 @@ use bevy::{
     asset::{AssetServer, Assets, Handle},
     color::Color,
     ecs::{
+        component::Component,
         hierarchy::Children,
+        observer::On,
         query::{Changed, With},
         resource::Resource,
         schedule::IntoScheduleConfigs,
@@ -13,6 +15,7 @@ use bevy::{
     },
     gltf::GltfAssetLabel,
     math::{Quat, Vec3},
+    mesh::Mesh3d,
     pbr::{MeshMaterial3d, StandardMaterial, StandardMaterialUniform},
     reflect::map::map_partial_cmp,
     render::occlusion_culling,
@@ -22,7 +25,7 @@ use bevy::{
     time::Time,
     transform::components::Transform,
     utils::default,
-    world_serialization::WorldAssetRoot,
+    world_serialization::{WorldAssetRoot, WorldInstanceReady},
 };
 
 use crate::{
@@ -45,7 +48,11 @@ pub fn plugin(app: &mut App) {
             .after(handle_deaths),
     );
     app.add_systems(Startup, setup_materials);
+    app.add_observer(apply_slime_material);
 }
+
+#[derive(Component)]
+pub struct SlimeMaterialOverride(pub Handle<StandardMaterial>);
 
 #[derive(Resource)]
 pub struct SlimeMaterials {
@@ -132,7 +139,7 @@ pub fn spawn_enemy(
             Enemy { damage: 1 },
             Health(100.0),
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy.glb"))),
-            MeshMaterial3d(handle.clone()),
+            SlimeMaterialOverride(handle.clone()),
             PathFollower { path, waypoint },
             MovementSpeed(2.0),
             transform,
@@ -145,6 +152,26 @@ pub fn spawn_enemy(
                 .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
         ))
         .observe(on_hittable_loaded);
+}
+
+pub fn apply_slime_material(
+    event: On<WorldInstanceReady>,
+    mut commands: Commands,
+    children: Query<&Children>,
+    overrides: Query<&SlimeMaterialOverride>,
+    meshes: Query<(), With<Mesh3d>>,
+) {
+    let Ok(material) = overrides.get(event.entity) else {
+        return;
+    };
+
+    for entity in children.iter_descendants(event.entity) {
+        if meshes.contains(entity) {
+            commands
+                .entity(entity)
+                .insert(MeshMaterial3d(material.0.clone()));
+        }
+    }
 }
 
 pub fn move_enemy(
