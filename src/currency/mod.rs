@@ -28,6 +28,18 @@ pub struct PlayerCurrencies {
     pub currencies: HashMap<Currency, u64>,
 }
 
+impl PlayerCurrencies {
+    pub fn from(red: u64, green: u64, blue: u64) -> Self {
+        let mut map = HashMap::new();
+
+        map.insert(Currency::Red, red);
+        map.insert(Currency::Green, green);
+        map.insert(Currency::Blue, blue);
+
+        return Self { currencies: map };
+    }
+}
+
 pub struct Price {
     pub currency: Currency,
     pub amount: u64,
@@ -56,10 +68,18 @@ impl PlayerCurrencies {
         *value = value.saturating_sub(price.amount);
         return true;
     }
+
+    pub fn deposit(&mut self, player_currencies: &PlayerCurrencies) {
+        for (currency, value) in self.currencies.iter_mut() {
+            let Some(deposit_value) = player_currencies.currencies.get(currency) else {
+                continue;
+            };
+
+            *value = value.saturating_add(*deposit_value);
+        }
+    }
 }
 
 pub fn purchase(player_currencies: &mut PlayerCurrencies, price: &Price) -> bool {
     return player_currencies.try_update_balance(price);
 }
-
-pub fn setup_currency_ui(mut commands: Commands) {}

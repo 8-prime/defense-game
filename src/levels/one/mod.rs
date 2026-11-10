@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    enemies::slime::{SlimeColor, SlimeMaterials, spawn_enemy},
+    enemies::{
+        SpawnEnemyMessage,
+        slime::{SlimeColor, SlimeMaterials, spawn_slime},
+    },
     generator::spawn_generator,
     levels::path::enemy_path,
     paths::Paths,
@@ -9,69 +12,49 @@ use crate::{
     state::GameState,
 };
 
-#[derive(Resource)]
-pub struct SpawnTarget(pub u64);
-
-#[derive(Resource)]
-pub struct EnemySpawnTimer(pub Timer);
-
-impl Default for EnemySpawnTimer {
-    fn default() -> Self {
-        Self(Timer::from_seconds(2.0, TimerMode::Repeating))
-    }
-}
+mod phases;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Playing), spawn_level);
-    app.add_systems(Update, spawn_enemies.run_if(in_state(GameState::Playing)));
     app.add_systems(OnEnter(GameState::Playing), setup_enemy_resources);
+    app.add_systems(
+        Update,
+        spawn_enemies.chain().run_if(in_state(GameState::Playing)),
+    );
 }
 
 pub fn setup_enemy_resources(mut commands: Commands) {
     commands.insert_resource(Paths {
         paths: vec![enemy_path()],
     });
-
-    commands.insert_resource(SpawnTarget(50));
 }
 
 pub fn spawn_enemies(
-    time: Res<Time>,
+    mut messages: MessageReader<SpawnEnemyMessage>,
     mut commands: Commands,
-    mut spawn_timer: ResMut<EnemySpawnTimer>,
-    mut spawn_target: ResMut<SpawnTarget>,
     materials: Res<SlimeMaterials>,
     enemy_paths: Res<Paths>,
     asset_server: Res<AssetServer>,
 ) {
-    if spawn_target.0 == 0 {
-        return;
+    for message in messages.read() {
+        let Some(path) = enemy_paths.paths.get(message.path_index) else {
+            return;
+        };
+
+        let Some(start) = path.get(0) else {
+            return;
+        };
+
+        spawn_slime(
+            &mut commands,
+            &asset_server,
+            Transform::from_translation(*start),
+            &materials,
+            SlimeColor::Green,
+            0,
+            1,
+        );
     }
-
-    let Some(path) = enemy_paths.paths.get(0) else {
-        return;
-    };
-
-    let Some(start) = path.get(0) else {
-        return;
-    };
-
-    spawn_timer.0.tick(time.delta());
-    if !spawn_timer.0.is_finished() {
-        return;
-    }
-    spawn_timer.0.reset();
-
-    spawn_enemy(
-        &mut commands,
-        &asset_server,
-        Transform::from_translation(*start),
-        &materials,
-        SlimeColor::Green,
-        0,
-        1,
-    );
-    spawn_target.0 -= 1;
 }
 
 pub fn spawn_level(
@@ -79,7 +62,6 @@ pub fn spawn_level(
     asset_server: Res<AssetServer>,
     camera: Single<Entity, With<Camera3d>>,
 ) {
-    commands.insert_resource(EnemySpawnTimer::default());
     // Floor
     commands.spawn((
         WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb"))),

@@ -119,7 +119,7 @@ pub fn show_health(
     }
 }
 
-pub fn spawn_enemy(
+pub fn spawn_slime(
     commands: &mut Commands,
     asset_server: &AssetServer,
     transform: Transform,

@@ -46,7 +46,7 @@ pub fn spawn_currency_ui(mut commands: Commands, currencies: Res<PlayerCurrencie
                 position_type: PositionType::Absolute,
                 top: px(0),
                 right: px(0),
-                width: px(100),
+                width: px(150),
                 height: px(100),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,

@@ -11,6 +11,7 @@ mod enemies;
 mod generator;
 mod hitbox;
 mod levels;
+mod menu;
 mod paths;
 mod player;
 mod state;
@@ -30,5 +31,6 @@ pub fn plugin(app: &mut App) {
         debug::plugin,
         generator::plugin,
         currency::plugin,
+        menu::plugin,
     ));
 }
