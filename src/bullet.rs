@@ -13,7 +13,7 @@ use bevy::{
     gltf::GltfAssetLabel,
     math::Vec3,
     shape::IntersectsVolume,
-    state::condition::in_state,
+    state::{condition::in_state, state_scoped::DespawnOnExit},
     time::Time,
     transform::components::{GlobalTransform, Transform},
     world_serialization::WorldAssetRoot,
@@ -103,6 +103,7 @@ pub fn spawn_bullet(
         .spawn((
             Bullet { dir, speed, damage },
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("bullet.glb"))),
+            DespawnOnExit(GameState::Playing),
             target_transform,
         ))
         .observe(on_hittable_loaded);

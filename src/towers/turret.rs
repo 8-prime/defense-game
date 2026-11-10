@@ -5,6 +5,7 @@ use crate::{
     core::AttackCooldown,
     damage::Health,
     enemies::Enemy,
+    state::GameState,
     towers::{TowerAssets, tower_type::TowerType},
 };
 
@@ -155,5 +156,6 @@ pub fn spawn_turret(commands: &mut Commands, position: Vec3, tower_assets: &Towe
         WorldAssetRoot(visuals.scene.clone()),
         Transform::from_translation(position)
             .with_scale(Vec3::splat(TowerType::Turret.define().scale)),
+        DespawnOnExit(GameState::Playing),
     ));
 }

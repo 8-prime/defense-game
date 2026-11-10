@@ -5,13 +5,25 @@ use crate::{
     state::GameState,
 };
 
+#[derive(Component)]
+pub struct MainCamera;
+
 pub fn plugin(app: &mut App) {
+    app.add_systems(Startup, add_camera);
     app.add_systems(
         Update,
         follow_player
             .after(move_player)
             .run_if(in_state(GameState::Playing)),
     );
+}
+
+pub fn add_camera(mut commands: Commands) {
+    commands.spawn((
+        MainCamera,
+        Camera3d::default(),
+        Transform::from_translation(Vec3::new(-7.0, 18.0, 17.0)).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
 }
 
 pub fn follow_player(

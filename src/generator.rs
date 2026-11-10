@@ -67,7 +67,7 @@ fn generator_damage(
             }
 
             commands.entity(enemy_entity).despawn();
-            generator.0 -= enemy.damage;
+            generator.0 = generator.0.saturating_sub(enemy.damage);
 
             if generator.0 <= 0 {
                 game_state.set(GameState::GameOver);
@@ -131,6 +131,7 @@ pub fn spawn_generator(commands: &mut Commands, asset_server: &AssetServer) {
                 asset_server.load(GltfAssetLabel::Scene(0).from_asset("power_core.glb")),
             ),
             Generator(10),
+            DespawnOnExit(GameState::Playing),
         ))
         .observe(on_hittable_loaded)
         .id();
@@ -147,5 +148,6 @@ pub fn spawn_generator(commands: &mut Commands, asset_server: &AssetServer) {
             justify_content: JustifyContent::Center,
             ..default()
         },
+        DespawnOnExit(GameState::Playing),
     ));
 }

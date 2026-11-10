@@ -1,7 +1,7 @@
 use bevy::{picking::hover::Hovered, prelude::*, window::PrimaryWindow};
 
 use crate::{
-    construction::{self, ui::ConstructionUi},
+    construction::ui::ConstructionUi,
     towers::{self, TowerAssets, tower_type::TowerType},
 };
 

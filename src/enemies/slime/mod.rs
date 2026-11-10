@@ -16,11 +16,9 @@ use bevy::{
     gltf::GltfAssetLabel,
     math::{Quat, Vec3},
     mesh::Mesh3d,
-    pbr::{MeshMaterial3d, StandardMaterial, StandardMaterialUniform},
-    reflect::map::map_partial_cmp,
-    render::occlusion_culling,
+    pbr::{MeshMaterial3d, StandardMaterial},
     sprite::Text2d,
-    state::condition::in_state,
+    state::{condition::in_state, state_scoped::DespawnOnExit},
     text::{TextColor, TextFont},
     time::Time,
     transform::components::Transform,
@@ -141,7 +139,8 @@ pub fn spawn_enemy(
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("enemy.glb"))),
             SlimeMaterialOverride(handle.clone()),
             PathFollower { path, waypoint },
-            MovementSpeed(2.0),
+            MovementSpeed(10.0),
+            DespawnOnExit(GameState::Playing),
             transform,
         ))
         .with_child((

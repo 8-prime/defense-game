@@ -1,44 +1,29 @@
-use bevy::{
-    app::{App, Update},
-    camera::Camera3d,
-    ecs::{
-        component::Component,
-        entity::Entity,
-        query::{Has, With},
-        resource::Resource,
-        system::{Commands, Query, ResMut},
-    },
-    math::Vec3,
-    state::{
-        app::AppExtStates,
-        state::{NextState, OnEnter, OnExit, States},
-    },
-    text::TextFont,
-    time::Timer,
-    transform::components::Transform,
-    ui::{AlignItems, JustifyContent, Node, Pressed, Val, widget::Text},
-    ui_widgets::Button,
-    utils::default,
-};
+use bevy::{prelude::*, ui::Pressed, ui_widgets::Button};
 
 pub fn plugin(app: &mut App) {
-    app.init_state::<GameState>()
-        .add_systems(OnEnter(GameState::MainMenu), setup_main_menu);
-    app.add_systems(OnExit(GameState::MainMenu), tear_down_main_menu);
+    app.init_state::<GameState>().add_sub_state::<InGameState>();
+    app.add_systems(OnEnter(GameState::MainMenu), setup_main_menu);
 
-    app.init_state::<GameState>()
-        .add_systems(OnEnter(GameState::GameOver), setup_game_over_menu);
-    app.add_systems(OnExit(GameState::GameOver), tear_down_game_over_menu);
+    app.add_systems(OnEnter(GameState::GameOver), setup_game_over_menu);
 
     app.add_systems(Update, handle_start_button);
+    app.add_systems(Update, handle_main_menu_button);
+    app.add_systems(Update, handle_escape.run_if(in_state(GameState::Playing)));
 }
 
 #[derive(Resource, States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     MainMenu,
     Playing,
-    Paused,
     GameOver,
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
+#[source(GameState = GameState::Playing)]
+pub enum InGameState {
+    #[default]
+    Running,
+    Paused,
 }
 
 impl Default for GameState {
@@ -60,18 +45,17 @@ pub struct StartGameButton;
 pub struct MainMenuButton;
 
 pub fn setup_main_menu(mut commands: Commands) {
-    commands.spawn((
-        Camera3d::default(),
-        Transform::from_translation(Vec3::new(-7.0, 18.0, 17.0)).looking_at(Vec3::ZERO, Vec3::Y),
-    ));
     commands
-        .spawn(Node {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        })
+        .spawn((
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            DespawnOnExit(GameState::MainMenu),
+        ))
         .with_children(|parent| {
             parent
                 .spawn((
@@ -84,6 +68,7 @@ pub fn setup_main_menu(mut commands: Commands) {
                         align_items: AlignItems::Center,
                         ..default()
                     },
+                    DespawnOnExit(GameState::Playing),
                 ))
                 .with_child((Text::new("Start Game"), TextFont::from_font_size(24.0)));
         });
@@ -91,13 +76,16 @@ pub fn setup_main_menu(mut commands: Commands) {
 
 pub fn setup_game_over_menu(mut commands: Commands) {
     commands
-        .spawn(Node {
-            width: Val::Percent(100.0),
-            height: Val::Percent(100.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        })
+        .spawn((
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            DespawnOnExit(GameState::GameOver),
+        ))
         .with_children(|parent| {
             parent
                 .spawn((
@@ -139,25 +127,26 @@ pub fn handle_start_button(
     }
 }
 
-pub fn tear_down_main_menu(
-    mut commands: Commands,
-    start_game_buttons: Query<Entity, With<StartGameButton>>,
+pub fn handle_main_menu_button(
+    buttons: Query<Has<Pressed>, With<MainMenuButton>>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
-    for start_button in start_game_buttons {
-        commands.entity(start_button).despawn();
+    for button in buttons {
+        if button {
+            game_state.set(GameState::MainMenu);
+        }
     }
 }
 
-pub fn tear_down_game_over_menu(
-    mut commands: Commands,
-    start_game_buttons: Query<Entity, With<StartGameButton>>,
-    main_menu_buttons: Query<Entity, With<MainMenuButton>>,
+pub fn handle_escape(
+    input: Res<ButtonInput<KeyCode>>,
+    current_state: Res<State<InGameState>>,
+    mut next_state: ResMut<NextState<InGameState>>,
 ) {
-    for start_button in start_game_buttons {
-        commands.entity(start_button).despawn();
-    }
-
-    for main_menu in main_menu_buttons {
-        commands.entity(main_menu).despawn();
+    if input.just_pressed(KeyCode::Escape) {
+        next_state.set(match current_state.get() {
+            InGameState::Running => InGameState::Paused,
+            InGameState::Paused => InGameState::Running,
+        });
     }
 }

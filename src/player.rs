@@ -93,5 +93,6 @@ pub fn spawn_player(commands: &mut Commands, asset_server: &AssetServer) {
         AttackRange { range: 10.0 },
         AttackCooldown(timer),
         MovementSpeed(2.0),
+        DespawnOnExit(GameState::Playing),
     ));
 }

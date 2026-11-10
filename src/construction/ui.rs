@@ -35,6 +35,7 @@ pub fn spawn_construction_ui(mut commands: Commands, tower_assets: Res<TowerAsse
                 ..default()
             },
             BackgroundColor(Color::srgba(0.05, 0.05, 0.07, 0.9)),
+            DespawnOnExit(GameState::Playing),
         ))
         .with_children(|parent| {
             for tower_type in TowerType::ALL {
@@ -70,7 +71,7 @@ pub fn spawn_construction_ui(mut commands: Commands, tower_assets: Res<TowerAsse
 
 pub fn handle_tower_button(
     event: On<Activate>,
-    buttons: Query<(&TowerButton)>,
+    buttons: Query<&TowerButton>,
     mut placement_state: ResMut<PlacementState>,
     mut commands: Commands,
     assets: Res<TowerAssets>,

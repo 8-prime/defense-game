@@ -81,9 +81,10 @@ pub fn spawn_level(
 ) {
     commands.insert_resource(EnemySpawnTimer::default());
     // Floor
-    commands.spawn((WorldAssetRoot(
-        asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb")),
-    ),));
+    commands.spawn((
+        WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb"))),
+        DespawnOnExit(GameState::Playing),
+    ));
 
     spawn_generator(&mut commands, &asset_server);
     spawn_player(&mut commands, &asset_server);
@@ -95,5 +96,6 @@ pub fn spawn_level(
             ..default()
         },
         Transform::from_xyz(50.0, 100.0, 50.0).looking_at(Vec3::ZERO, Vec3::Y),
+        DespawnOnExit(GameState::Playing),
     ));
 }
