@@ -29,5 +29,6 @@ pub fn plugin(app: &mut App) {
         camera::plugin,
         debug::plugin,
         generator::plugin,
+        currency::plugin,
     ));
 }

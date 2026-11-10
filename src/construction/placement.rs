@@ -2,12 +2,19 @@ use bevy::{picking::hover::Hovered, prelude::*, window::PrimaryWindow};
 
 use crate::{
     construction::ui::ConstructionUi,
+    currency::{PlayerCurrencies, purchase},
+    state::GameState,
     towers::{self, TowerAssets, tower_type::TowerType},
 };
 
 pub fn plugin(app: &mut App) {
     app.insert_resource(PlacementState { active: None });
-    app.add_systems(Update, (update_placement, handle_placement).chain());
+    app.add_systems(
+        Update,
+        (update_placement, handle_placement)
+            .run_if(in_state(GameState::Playing))
+            .chain(),
+    );
 }
 
 #[derive(Resource)]
@@ -97,6 +104,7 @@ pub fn handle_placement(
     mut placement: ResMut<PlacementState>,
     transforms: Query<&Transform, With<TowerPreview>>,
     tower_assets: Res<TowerAssets>,
+    mut player_currency: ResMut<PlayerCurrencies>,
     construction_ui: Single<&Hovered, With<ConstructionUi>>,
 ) {
     if construction_ui.0 {
@@ -116,6 +124,10 @@ pub fn handle_placement(
     }
 
     let tower_type = active.tower_type;
+    let def = tower_type.define();
+    if !purchase(&mut player_currency, &def.price) {
+        return;
+    }
 
     stop_placement(&mut commands, &mut placement);
 

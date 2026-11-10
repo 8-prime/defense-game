@@ -1,3 +1,5 @@
+use crate::currency::Price;
+
 #[derive(Eq, PartialEq, Hash, Debug, Clone, Copy)]
 pub enum TowerType {
     Turret,
@@ -10,7 +12,10 @@ impl TowerType {
         match self {
             TowerType::Turret => TowerDefinition {
                 name: "Turret",
-                cost: 10,
+                price: Price {
+                    amount: 4,
+                    currency: crate::currency::Currency::Green,
+                },
                 range: 10.0,
                 scale: 2.0,
                 scene_path: "turret.glb",
@@ -22,7 +27,7 @@ impl TowerType {
 
 pub struct TowerDefinition {
     pub name: &'static str,
-    pub cost: u64,
+    pub price: Price,
     pub range: f32,
     pub scale: f32,
     pub scene_path: &'static str,
