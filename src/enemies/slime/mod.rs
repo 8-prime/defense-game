@@ -36,7 +36,6 @@ use crate::{
 };
 
 pub fn plugin(app: &mut App) {
-    app.add_message::<DamageMessage>();
     // apply_damage
     app.add_systems(
         Update,

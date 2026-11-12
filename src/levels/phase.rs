@@ -159,10 +159,12 @@ pub fn complete_phase(
     enemies: Query<&Enemy>,
     current_phase: Res<CurrentPhase>,
     mut currency: ResMut<PlayerCurrencies>,
+    mut commands: Commands,
 ) {
     if enemies.count() > 0 || !current_phase.spawning_complete {
         return;
     }
     next_phase_state.set(PhaseState::Preparing);
     currency.deposit(&current_phase.phase.reward.rewards);
+    commands.remove_resource::<CurrentPhase>();
 }

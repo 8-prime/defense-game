@@ -7,6 +7,7 @@ pub mod slime;
 
 pub fn plugin(app: &mut App) {
     slime::plugin(app);
+    app.add_message::<SpawnEnemyMessage>();
 }
 
 #[derive(Message)]

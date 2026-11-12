@@ -70,12 +70,15 @@ impl PlayerCurrencies {
     }
 
     pub fn deposit(&mut self, player_currencies: &PlayerCurrencies) {
-        for (currency, value) in self.currencies.iter_mut() {
-            let Some(deposit_value) = player_currencies.currencies.get(currency) else {
-                continue;
-            };
-
-            *value = value.saturating_add(*deposit_value);
+        for (currency, value) in player_currencies.currencies.iter() {
+            match self.currencies.get_mut(currency) {
+                Some(deposit_value) => {
+                    *deposit_value = deposit_value.saturating_add(*value);
+                }
+                None => {
+                    self.currencies.insert(*currency, *value);
+                }
+            }
         }
     }
 }
