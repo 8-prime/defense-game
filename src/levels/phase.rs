@@ -10,6 +10,7 @@ use crate::{
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(PhaseState::Preparing), phase_ui);
+    app.add_systems(OnEnter(PhaseState::Active), activate_phase);
     app.add_systems(Update, handle_start_phase);
     app.add_systems(
         Update,
@@ -22,8 +23,8 @@ pub fn plugin(app: &mut App) {
 
 #[derive(Resource)]
 pub struct LevelPhases {
-    next_phase: usize,
-    phases: Vec<Phase>,
+    pub next_phase: usize,
+    pub phases: Vec<Phase>,
 }
 
 #[derive(Clone)]
@@ -61,6 +62,14 @@ impl From<Phase> for CurrentPhase {
             spawning_complete: false,
         };
     }
+}
+
+pub fn activate_phase(mut commands: Commands, mut phase_info: ResMut<LevelPhases>) {
+    let Some(next_phase) = phase_info.phases.get(phase_info.next_phase) else {
+        return;
+    };
+    commands.insert_resource(CurrentPhase::from(next_phase.clone()));
+    phase_info.next_phase += 1;
 }
 
 pub fn tick_phase(
@@ -137,17 +146,10 @@ pub fn phase_ui(mut commands: Commands) {
 pub fn handle_start_phase(
     buttons: Query<Has<Pressed>, With<StartPhaseButton>>,
     mut game_state: ResMut<NextState<PhaseState>>,
-    mut commands: Commands,
-    mut phase_info: ResMut<LevelPhases>,
 ) {
     for button in buttons {
         if button {
-            let Some(next_phase) = phase_info.phases.get(phase_info.next_phase) else {
-                continue;
-            };
-            commands.insert_resource(CurrentPhase::from(next_phase.clone()));
             game_state.set(PhaseState::Active);
-            phase_info.next_phase += 1;
         }
     }
 }

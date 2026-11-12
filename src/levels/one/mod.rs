@@ -6,7 +6,7 @@ use crate::{
         slime::{SlimeColor, SlimeMaterials, spawn_slime},
     },
     generator::spawn_generator,
-    levels::{LevelPhases, one::phases::get_phases, path::enemy_path},
+    levels::{one::phases::get_phases, path::enemy_path, phase::LevelPhases},
     paths::Paths,
     player::spawn_player,
     state::GameState,
