@@ -6,11 +6,8 @@ use crate::{
     levels::phase::{EnemySpawnInfo, Phase, PhaseReward},
 };
 
-pub fn get_phase(index: usize) -> Option<Phase> {
-    return match index {
-        1 => Some(phase_one()),
-        _ => None,
-    };
+pub fn get_phases() -> Vec<Phase> {
+    return vec![phase_one()];
 }
 
 pub fn phase_one() -> Phase {

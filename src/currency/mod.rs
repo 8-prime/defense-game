@@ -23,7 +23,7 @@ pub enum Currency {
     Blue,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct PlayerCurrencies {
     pub currencies: HashMap<Currency, u64>,
 }

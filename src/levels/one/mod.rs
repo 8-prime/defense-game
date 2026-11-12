@@ -6,7 +6,7 @@ use crate::{
         slime::{SlimeColor, SlimeMaterials, spawn_slime},
     },
     generator::spawn_generator,
-    levels::path::enemy_path,
+    levels::{LevelPhases, one::phases::get_phases, path::enemy_path},
     paths::Paths,
     player::spawn_player,
     state::GameState,
@@ -24,6 +24,11 @@ pub fn plugin(app: &mut App) {
 }
 
 pub fn setup_enemy_resources(mut commands: Commands) {
+    commands.insert_resource(LevelPhases {
+        next_phase: 0,
+        phases: get_phases(),
+    });
+
     commands.insert_resource(Paths {
         paths: vec![enemy_path()],
     });
@@ -57,11 +62,7 @@ pub fn spawn_enemies(
     }
 }
 
-pub fn spawn_level(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    camera: Single<Entity, With<Camera3d>>,
-) {
+pub fn spawn_level(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Floor
     commands.spawn((
         WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset("floor.glb"))),
